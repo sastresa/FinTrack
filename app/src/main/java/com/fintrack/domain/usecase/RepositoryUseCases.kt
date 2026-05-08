@@ -3,6 +3,7 @@ package com.fintrack.domain.usecase
 import com.fintrack.domain.model.Budget
 import com.fintrack.domain.model.Category
 import com.fintrack.domain.model.ReportData
+import com.fintrack.domain.model.Settings
 import com.fintrack.domain.model.Transaction
 import com.fintrack.domain.repository.FinanceRepository
 import java.time.YearMonth
@@ -66,4 +67,16 @@ class GetReportDataUseCase(private val repository: FinanceRepository) {
 
 class ExportTransactionsUseCase(private val repository: FinanceRepository) {
     suspend operator fun invoke(): String = repository.exportTransactions()
+}
+
+class GetSettingsUseCase(private val repository: FinanceRepository) {
+    operator fun invoke(): Flow<Settings> = repository.observeSettings()
+}
+
+class UpdateSettingsUseCase(private val repository: FinanceRepository) {
+    suspend operator fun invoke(settings: Settings) = repository.updateSettings(settings)
+}
+
+class ClearLocalDataUseCase(private val repository: FinanceRepository) {
+    suspend operator fun invoke() = repository.clearLocalData()
 }

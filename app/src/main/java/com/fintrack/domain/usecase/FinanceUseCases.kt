@@ -1,0 +1,63 @@
+package com.fintrack.domain.usecase
+
+import com.fintrack.domain.repository.FinanceRepository
+
+data class FinanceUseCases(
+    val getTransactions: GetTransactionsUseCase,
+    val getTransaction: GetTransactionUseCase,
+    val addTransaction: AddTransactionUseCase,
+    val updateTransaction: UpdateTransactionUseCase,
+    val deleteTransaction: DeleteTransactionUseCase,
+    val filterTransactions: FilterTransactionsUseCase,
+    val searchTransactions: SearchTransactionsUseCase,
+    val calculateMonthlySummary: CalculateMonthlySummaryUseCase,
+    val getCategories: GetCategoriesUseCase,
+    val addCategory: AddCategoryUseCase,
+    val updateCategory: UpdateCategoryUseCase,
+    val deleteCategory: DeleteCategoryUseCase,
+    val getBudgets: GetBudgetsUseCase,
+    val addBudget: AddBudgetUseCase,
+    val updateBudget: UpdateBudgetUseCase,
+    val deleteBudget: DeleteBudgetUseCase,
+    val calculateBudgetProgress: CalculateBudgetProgressUseCase,
+    val getReportData: GetReportDataUseCase,
+    val buildReportData: BuildReportDataUseCase,
+    val exportTransactions: ExportTransactionsUseCase,
+    val generateCsv: GenerateCsvUseCase,
+    val validateTransactionInput: ValidateTransactionInputUseCase,
+    val validateBudgetInput: ValidateBudgetInputUseCase,
+    val getSettings: GetSettingsUseCase,
+    val updateSettings: UpdateSettingsUseCase,
+    val clearLocalData: ClearLocalDataUseCase,
+) {
+    companion object {
+        fun from(repository: FinanceRepository): FinanceUseCases = FinanceUseCases(
+            getTransactions = GetTransactionsUseCase(repository),
+            getTransaction = GetTransactionUseCase(repository),
+            addTransaction = AddTransactionUseCase(repository),
+            updateTransaction = UpdateTransactionUseCase(repository),
+            deleteTransaction = DeleteTransactionUseCase(repository),
+            filterTransactions = FilterTransactionsUseCase(),
+            searchTransactions = SearchTransactionsUseCase(),
+            calculateMonthlySummary = CalculateMonthlySummaryUseCase(),
+            getCategories = GetCategoriesUseCase(repository),
+            addCategory = AddCategoryUseCase(repository),
+            updateCategory = UpdateCategoryUseCase(repository),
+            deleteCategory = DeleteCategoryUseCase(repository),
+            getBudgets = GetBudgetsUseCase(repository),
+            addBudget = AddBudgetUseCase(repository),
+            updateBudget = UpdateBudgetUseCase(repository),
+            deleteBudget = DeleteBudgetUseCase(repository),
+            calculateBudgetProgress = CalculateBudgetProgressUseCase(),
+            getReportData = GetReportDataUseCase(repository),
+            buildReportData = BuildReportDataUseCase(),
+            exportTransactions = ExportTransactionsUseCase(repository),
+            generateCsv = GenerateCsvUseCase(),
+            validateTransactionInput = ValidateTransactionInputUseCase(),
+            validateBudgetInput = ValidateBudgetInputUseCase(),
+            getSettings = GetSettingsUseCase(repository),
+            updateSettings = UpdateSettingsUseCase(repository),
+            clearLocalData = ClearLocalDataUseCase(repository),
+        )
+    }
+}
