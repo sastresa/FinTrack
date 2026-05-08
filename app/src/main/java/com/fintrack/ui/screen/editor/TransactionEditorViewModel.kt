@@ -9,6 +9,7 @@ import com.fintrack.domain.usecase.FinanceUseCases
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,7 +38,7 @@ class TransactionEditorViewModel(
                         it.copy(
                             id = transaction.id,
                             title = transaction.title,
-                            amountText = "%.2f".format(transaction.amount.minorUnits / 100.0),
+                            amountText = String.format(Locale.US, "%.2f", transaction.amount.minorUnits / 100.0),
                             type = transaction.type,
                             categoryId = transaction.categoryId,
                             date = transaction.date,

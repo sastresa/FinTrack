@@ -7,6 +7,8 @@ import com.fintrack.data.local.db.FinTrackDatabase
 import com.fintrack.data.repository.RoomFinanceRepository
 import com.fintrack.domain.repository.FinanceRepository
 import com.fintrack.domain.usecase.FinanceUseCases
+import com.fintrack.worker.BackgroundWorkScheduler
+import com.fintrack.worker.WorkManagerBackgroundWorkScheduler
 
 class AppContainer(
     val context: Context,
@@ -34,5 +36,9 @@ class AppContainer(
 
     val useCases: FinanceUseCases by lazy {
         FinanceUseCases.from(repository)
+    }
+
+    val backgroundWorkScheduler: BackgroundWorkScheduler by lazy {
+        WorkManagerBackgroundWorkScheduler(context)
     }
 }

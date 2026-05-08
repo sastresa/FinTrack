@@ -40,7 +40,9 @@ import com.fintrack.ui.screen.transactions.TransactionListViewModel
 @Composable
 fun FinTrackApp(appContainer: AppContainer) {
     val navController = rememberNavController()
-    val factory = remember(appContainer) { FinTrackViewModelFactory(appContainer.useCases) }
+    val factory = remember(appContainer) {
+        FinTrackViewModelFactory(appContainer.useCases, appContainer.backgroundWorkScheduler)
+    }
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStack?.destination?.route
 
@@ -160,6 +162,8 @@ fun FinTrackApp(appContainer: AppContainer) {
                     state = state,
                     onCurrencySelected = viewModel::onCurrencySelected,
                     onDarkModeChanged = viewModel::onDarkModeChanged,
+                    onExport = viewModel::onExportClicked,
+                    onBackup = viewModel::onBackupClicked,
                     onClearData = viewModel::onClearLocalDataClicked,
                     onCategories = { navController.navigate(Routes.CATEGORIES) },
                 )

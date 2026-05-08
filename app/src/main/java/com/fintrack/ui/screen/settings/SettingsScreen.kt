@@ -22,6 +22,8 @@ fun SettingsScreen(
     state: SettingsUiState,
     onCurrencySelected: (String) -> Unit,
     onDarkModeChanged: (Boolean) -> Unit,
+    onExport: () -> Unit,
+    onBackup: () -> Unit,
     onClearData: () -> Unit,
     onCategories: () -> Unit,
     modifier: Modifier = Modifier,
@@ -50,8 +52,17 @@ fun SettingsScreen(
         Button(onClick = onCategories, modifier = Modifier.fillMaxWidth()) {
             Text("Manage categories")
         }
+        Button(onClick = onExport, modifier = Modifier.fillMaxWidth()) {
+            Text("Export CSV")
+        }
+        Button(onClick = onBackup, modifier = Modifier.fillMaxWidth()) {
+            Text("Backup")
+        }
         OutlinedButton(onClick = onClearData, modifier = Modifier.fillMaxWidth()) {
             Text("Clear local data")
+        }
+        state.statusMessage?.let {
+            Text(it, color = MaterialTheme.colorScheme.primary)
         }
     }
 }

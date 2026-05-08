@@ -2,6 +2,7 @@ package com.fintrack.domain.usecase
 
 import com.fintrack.domain.model.Category
 import com.fintrack.domain.model.Transaction
+import java.util.Locale
 
 class GenerateCsvUseCase {
     operator fun invoke(
@@ -17,7 +18,7 @@ class GenerateCsvUseCase {
                     transaction.date.toString(),
                     transaction.type.name.lowercase(),
                     transaction.title,
-                    "%.2f".format(transaction.amount.minorUnits / 100.0),
+                    String.format(Locale.US, "%.2f", transaction.amount.minorUnits / 100.0),
                     categoryNames[transaction.categoryId].orEmpty(),
                     transaction.notes.orEmpty(),
                     transaction.isRecurring.toString(),
