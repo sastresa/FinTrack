@@ -14,6 +14,7 @@ data class TransactionEditorUiState(
     val date: LocalDate? = null,
     val notes: String = "",
     val isRecurring: Boolean = false,
+    val isDatePickerVisible: Boolean = false,
     val categories: List<Category> = emptyList(),
     val fieldErrors: Map<String, String> = emptyMap(),
     val errorMessage: String? = null,

@@ -20,7 +20,8 @@ class DashboardViewModel(
     val uiState = combine(
         useCases.getTransactions(),
         useCases.getCategories(),
-    ) { transactions, categories ->
+        useCases.getSettings(),
+    ) { transactions, categories, settings ->
         val summary = useCases.calculateMonthlySummary(transactions, month)
         val report = useCases.buildReportData(transactions, categories, month)
         DashboardUiState(
@@ -31,6 +32,8 @@ class DashboardViewModel(
             recentTransactions = transactions
                 .sortedWith(compareByDescending<com.fintrack.domain.model.Transaction> { it.date }.thenByDescending { it.updatedAt })
                 .take(5),
+            categories = categories,
+            currencyCode = settings.currencyCode,
             isEmpty = transactions.isEmpty(),
             errorMessage = null,
         )

@@ -27,7 +27,17 @@ class TransactionEditorViewModel(
     init {
         viewModelScope.launch {
             useCases.getCategories().collect { categories ->
-                _uiState.update { it.copy(categories = categories) }
+                _uiState.update { state ->
+                    val compatibleCategoryId = if (
+                        state.categoryId == null ||
+                        categories.none { it.id == state.categoryId && it.supports(state.type) }
+                    ) {
+                        categories.firstOrNull { it.supports(state.type) }?.id
+                    } else {
+                        state.categoryId
+                    }
+                    state.copy(categories = categories, categoryId = compatibleCategoryId)
+                }
             }
         }
         if (transactionId != null) {
@@ -53,11 +63,22 @@ class TransactionEditorViewModel(
 
     fun onTitleChanged(value: String) = _uiState.update { it.copy(title = value, isSaved = false) }
     fun onAmountChanged(value: String) = _uiState.update { it.copy(amountText = value, isSaved = false) }
-    fun onTypeSelected(value: TransactionType) = _uiState.update { it.copy(type = value, isSaved = false) }
+    fun onTypeSelected(value: TransactionType) = _uiState.update { state ->
+        val categoryId = if (state.categories.any { it.id == state.categoryId && it.supports(value) }) {
+            state.categoryId
+        } else {
+            state.categories.firstOrNull { it.supports(value) }?.id
+        }
+        state.copy(type = value, categoryId = categoryId, isSaved = false)
+    }
     fun onCategorySelected(value: Long?) = _uiState.update { it.copy(categoryId = value, isSaved = false) }
-    fun onDateSelected(value: LocalDate?) = _uiState.update { it.copy(date = value, isSaved = false) }
+    fun onDateSelected(value: LocalDate?) = _uiState.update {
+        it.copy(date = value, isDatePickerVisible = false, isSaved = false)
+    }
     fun onNotesChanged(value: String) = _uiState.update { it.copy(notes = value, isSaved = false) }
     fun onRecurringChanged(value: Boolean) = _uiState.update { it.copy(isRecurring = value, isSaved = false) }
+    fun onDatePickerClicked() = _uiState.update { it.copy(isDatePickerVisible = true) }
+    fun onDatePickerDismissed() = _uiState.update { it.copy(isDatePickerVisible = false) }
 
     fun onSaveClicked() {
         val state = _uiState.value

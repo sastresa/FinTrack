@@ -9,6 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -23,8 +24,13 @@ class ReportsViewModel(
 
     val uiState = selectedMonth
         .flatMapLatest { month ->
-            useCases.getReportData(month).map { report ->
-                ReportsUiState(isLoading = false, month = month, reportData = report)
+            combine(useCases.getReportData(month), useCases.getSettings()) { report, settings ->
+                ReportsUiState(
+                    isLoading = false,
+                    month = month,
+                    reportData = report,
+                    currencyCode = settings.currencyCode,
+                )
             }
         }
         .catch { emit(ReportsUiState(isLoading = false, month = selectedMonth.value, errorMessage = it.message)) }

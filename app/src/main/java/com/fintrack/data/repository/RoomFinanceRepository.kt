@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import androidx.core.content.edit
 
 class RoomFinanceRepository(
     private val transactionDao: TransactionDao,
@@ -83,10 +84,10 @@ class RoomFinanceRepository(
     override fun observeSettings(): Flow<Settings> = settings
 
     override suspend fun updateSettings(settings: Settings) {
-        preferences.edit()
-            .putString(KEY_CURRENCY_CODE, settings.currencyCode)
-            .putBoolean(KEY_DARK_MODE, settings.darkModeEnabled)
-            .apply()
+        preferences.edit {
+            putString(KEY_CURRENCY_CODE, settings.currencyCode)
+                .putBoolean(KEY_DARK_MODE, settings.darkModeEnabled)
+        }
         this.settings.value = settings
     }
 

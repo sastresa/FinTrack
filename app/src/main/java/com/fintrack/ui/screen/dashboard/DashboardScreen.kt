@@ -7,19 +7,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.fintrack.ui.component.AppPanel
+import com.fintrack.ui.component.CategoryBadge
 import com.fintrack.ui.component.EmptyState
+import com.fintrack.ui.component.InfoPill
 import com.fintrack.ui.component.MetricCard
 import com.fintrack.ui.component.ProgressRow
+import com.fintrack.ui.component.ScreenHeader
 import com.fintrack.ui.component.SectionHeader
 
 @Composable
@@ -29,6 +33,7 @@ fun DashboardScreen(
     onTransactionSelected: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val categoriesById = state.categories.associateBy { it.id }
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -36,27 +41,56 @@ fun DashboardScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("Dashboard", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                    Text(state.month.toString(), style = MaterialTheme.typography.bodyMedium)
-                }
-                Button(onClick = onQuickAdd) {
-                    Text("Quick add")
-                }
-            }
+            ScreenHeader(
+                title = "Dashboard",
+                subtitle = state.month.toString(),
+                eyebrow = "OVERVIEW",
+                trailing = {
+                    Button(onClick = onQuickAdd) {
+                        Text("Quick add")
+                    }
+                },
+            )
         }
         item {
-            MetricCard("Balance", state.summary.balance.format(), Modifier.fillMaxWidth())
+            AppPanel(Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(18.dp),
+                ) {
+                    InfoPill("Current month")
+                    Text(
+                        text = "Balance",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = state.summary.balance.format(state.currencyCode),
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Income", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(state.summary.income.format(state.currencyCode), fontWeight = FontWeight.Medium)
+                        }
+                        Column(Modifier.weight(1f)) {
+                            Text("Expenses", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(state.summary.expenses.format(state.currencyCode), fontWeight = FontWeight.Medium)
+                        }
+                        Column(Modifier.weight(1f)) {
+                            Text("Savings", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("${(state.summary.savingsRate * 100).toInt()}%", fontWeight = FontWeight.Medium)
+                        }
+                    }
+                }
+            }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                MetricCard("Income", state.summary.income.format(), Modifier.weight(1f))
-                MetricCard("Expenses", state.summary.expenses.format(), Modifier.weight(1f))
+                MetricCard("Income", state.summary.income.format(state.currencyCode), modifier = Modifier.weight(1f), accentHeight = 22.dp)
+                MetricCard("Expenses", state.summary.expenses.format(state.currencyCode), modifier = Modifier.weight(1f), accentHeight = 22.dp)
             }
-        }
-        item {
-            MetricCard("Savings rate", "${(state.summary.savingsRate * 100).toInt()}%", Modifier.fillMaxWidth())
         }
         item {
             SectionHeader("Category breakdown")
@@ -64,8 +98,8 @@ fun DashboardScreen(
                 EmptyState("No expenses for this month yet.")
             }
         }
-        items(state.categoryBreakdown, key = { it.categoryId }) { category ->
-            ProgressRow(category.categoryName, category.total, category.percentage)
+        items(state.categoryBreakdown, key = { "category-${it.categoryId}" }) { category ->
+            ProgressRow(category.categoryName, category.total, category.percentage, currencyCode = state.currencyCode)
         }
         item {
             SectionHeader("Recent transactions")
@@ -73,23 +107,45 @@ fun DashboardScreen(
                 EmptyState("Add your first transaction to start tracking.")
             }
         }
-        items(state.recentTransactions, key = { it.id }) { transaction ->
-            Card(
+        items(state.recentTransactions, key = { "transaction-${it.id}" }) { transaction ->
+            val category = categoriesById[transaction.categoryId]
+            AppPanel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onTransactionSelected(transaction.id) },
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Column {
-                        Text(transaction.title, fontWeight = FontWeight.Medium)
-                        Text(transaction.date.toString(), style = MaterialTheme.typography.bodySmall)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(transaction.title, fontWeight = FontWeight.Medium)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                category?.let {
+                                    CategoryBadge(
+                                        iconName = it.iconName,
+                                        colorToken = it.colorToken,
+                                        label = it.name,
+                                    )
+                                }
+                                Text(
+                                    transaction.date.toString(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            text = if (transaction.type.name == "INCOME") "IN" else "OUT",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.width(26.dp),
+                        )
+                        Text(transaction.amount.format(state.currencyCode), fontWeight = FontWeight.SemiBold)
                     }
-                    Text(transaction.amount.format(), fontWeight = FontWeight.SemiBold)
                 }
             }
         }

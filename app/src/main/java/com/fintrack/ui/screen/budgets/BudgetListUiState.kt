@@ -9,6 +9,11 @@ data class BudgetListUiState(
     val budgets: List<Budget> = emptyList(),
     val progress: List<BudgetProgress> = emptyList(),
     val categories: List<Category> = emptyList(),
+    val selectedCategoryId: Long? = null,
+    val monthInput: String = "",
+    val limitAmountText: String = "",
+    val fieldErrors: Map<String, String> = emptyMap(),
+    val currencyCode: String = "USD",
     val isEmpty: Boolean = true,
     val errorMessage: String? = null,
 )

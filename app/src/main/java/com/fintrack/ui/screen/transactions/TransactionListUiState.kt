@@ -11,6 +11,7 @@ data class TransactionListUiState(
     val groupedTransactions: Map<LocalDate, List<Transaction>> = emptyMap(),
     val categories: List<Category> = emptyList(),
     val filter: TransactionFilter = TransactionFilter(),
+    val currencyCode: String = "USD",
     val isEmpty: Boolean = true,
     val errorMessage: String? = null,
 )

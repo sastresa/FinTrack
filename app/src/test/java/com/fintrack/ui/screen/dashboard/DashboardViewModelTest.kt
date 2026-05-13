@@ -4,6 +4,7 @@ import com.fintrack.MainDispatcherRule
 import com.fintrack.TestFixtures
 import com.fintrack.data.FakeFinanceRepository
 import com.fintrack.domain.model.Money
+import com.fintrack.domain.model.Settings
 import com.fintrack.domain.model.TransactionType
 import com.fintrack.domain.usecase.FinanceUseCases
 import java.time.Clock
@@ -42,5 +43,20 @@ class DashboardViewModelTest {
         assertEquals(Money(487500), state.summary.balance)
         assertEquals(listOf("Groceries"), state.categoryBreakdown.map { it.categoryName })
         assertEquals(listOf("Groceries", "May salary"), state.recentTransactions.map { it.title })
+    }
+
+    @Test
+    fun dashboardUpdatesCurrencyFromSettingsFlow() = runTest {
+        val repository = FakeFinanceRepository()
+        val viewModel = DashboardViewModel(
+            useCases = FinanceUseCases.from(repository),
+            clock = Clock.fixed(Instant.parse("2026-05-08T12:00:00Z"), ZoneOffset.UTC),
+        )
+        advanceUntilIdle()
+
+        repository.updateSettings(Settings(currencyCode = "EUR"))
+        advanceUntilIdle()
+
+        assertEquals("EUR", viewModel.uiState.value.currencyCode)
     }
 }

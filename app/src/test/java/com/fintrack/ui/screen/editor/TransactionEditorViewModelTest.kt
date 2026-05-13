@@ -54,5 +54,34 @@ class TransactionEditorViewModelTest {
         assertTrue(viewModel.uiState.value.isSaved)
     }
 
+    @Test
+    fun datePickerVisibilityIsOwnedByEditorState() = runTest {
+        val repository = FakeFinanceRepository()
+        val viewModel = TransactionEditorViewModel(FinanceUseCases.from(repository), clock())
+
+        viewModel.onDatePickerClicked()
+        assertTrue(viewModel.uiState.value.isDatePickerVisible)
+
+        viewModel.onDateSelected(LocalDate.of(2026, 5, 8))
+
+        assertEquals(LocalDate.of(2026, 5, 8), viewModel.uiState.value.date)
+        assertTrue(!viewModel.uiState.value.isDatePickerVisible)
+    }
+
+    @Test
+    fun editorSelectsCompatibleDefaultCategoryForType() = runTest {
+        val repository = FakeFinanceRepository()
+        repository.seedCategories(TestFixtures.groceries, TestFixtures.salary)
+        val viewModel = TransactionEditorViewModel(FinanceUseCases.from(repository), clock())
+
+        advanceUntilIdle()
+
+        assertEquals(TestFixtures.groceries.id, viewModel.uiState.value.categoryId)
+
+        viewModel.onTypeSelected(TransactionType.INCOME)
+
+        assertEquals(TestFixtures.salary.id, viewModel.uiState.value.categoryId)
+    }
+
     private fun clock(): Clock = Clock.fixed(Instant.parse("2026-05-08T10:00:00Z"), ZoneOffset.UTC)
 }

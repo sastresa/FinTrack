@@ -22,8 +22,9 @@ class TransactionListViewModel(
     val uiState = combine(
         useCases.getTransactions(),
         useCases.getCategories(),
+        useCases.getSettings(),
         filter,
-    ) { transactions, categories, activeFilter ->
+    ) { transactions, categories, settings, activeFilter ->
         val filtered = useCases.filterTransactions(transactions, activeFilter)
         TransactionListUiState(
             isLoading = false,
@@ -31,6 +32,7 @@ class TransactionListViewModel(
             groupedTransactions = filtered.groupBy { it.date },
             categories = categories,
             filter = activeFilter,
+            currencyCode = settings.currencyCode,
             isEmpty = filtered.isEmpty(),
         )
     }

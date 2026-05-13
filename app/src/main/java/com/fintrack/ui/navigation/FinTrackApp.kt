@@ -1,13 +1,20 @@
 package com.fintrack.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -36,6 +43,9 @@ import com.fintrack.ui.screen.settings.SettingsScreen
 import com.fintrack.ui.screen.settings.SettingsViewModel
 import com.fintrack.ui.screen.transactions.TransactionListScreen
 import com.fintrack.ui.screen.transactions.TransactionListViewModel
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import com.fintrack.ui.component.FinanceNavBadge
 
 @Composable
 fun FinTrackApp(appContainer: AppContainer) {
@@ -46,127 +56,178 @@ fun FinTrackApp(appContainer: AppContainer) {
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStack?.destination?.route
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                topLevelDestinations.forEach { destination ->
-                    NavigationBarItem(
-                        selected = currentRoute == destination.route,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Text(destination.label.take(1)) },
-                        label = { Text(destination.label) },
-                    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.background,
+                    ),
+                ),
+            ),
+    ) {
+        Scaffold(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            bottomBar = {
+                Surface(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    tonalElevation = 6.dp,
+                    shadowElevation = 0.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
+                ) {
+                    NavigationBar(
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        tonalElevation = 0.dp,
+                    ) {
+                        topLevelDestinations.forEach { destination ->
+                            val selected = currentRoute == destination.route
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    navController.navigate(destination.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                icon = {
+                                    FinanceNavBadge(
+                                        route = destination.route,
+                                        selected = selected,
+                                        modifier = Modifier
+                                            .padding(vertical = 2.dp)
+                                            .size(34.dp),
+                                    )
+                                },
+                                label = { Text(destination.label) },
+                            )
+                        }
+                    }
                 }
             }
-        },
-    ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = Routes.DASHBOARD,
-            modifier = Modifier.padding(padding),
-        ) {
-            composable(Routes.DASHBOARD) {
-                val viewModel: DashboardViewModel = viewModel(factory = factory)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                DashboardScreen(
-                    state = state,
-                    onQuickAdd = { navController.navigate(Routes.transactionEditor()) },
-                    onTransactionSelected = { navController.navigate(Routes.transactionEditor(it)) },
-                )
-            }
-            composable(Routes.TRANSACTIONS) {
-                val viewModel: TransactionListViewModel = viewModel(factory = factory)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                TransactionListScreen(
-                    state = state,
-                    onSearchQueryChanged = viewModel::onSearchQueryChanged,
-                    onTypeFilterChanged = viewModel::onTypeFilterChanged,
-                    onTransactionSelected = { navController.navigate(Routes.transactionEditor(it)) },
-                    onDelete = viewModel::onDeleteClicked,
-                )
-            }
-            composable(Routes.TRANSACTION_EDITOR) {
-                val viewModel: TransactionEditorViewModel = transactionEditorViewModel(appContainer.useCases, null)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                TransactionEditorScreen(
-                    state = state,
-                    onTitleChanged = viewModel::onTitleChanged,
-                    onAmountChanged = viewModel::onAmountChanged,
-                    onTypeSelected = viewModel::onTypeSelected,
-                    onCategorySelected = viewModel::onCategorySelected,
-                    onDateSelected = viewModel::onDateSelected,
-                    onNotesChanged = viewModel::onNotesChanged,
-                    onRecurringChanged = viewModel::onRecurringChanged,
-                    onSave = viewModel::onSaveClicked,
-                    onCancel = { navController.popBackStack() },
-                )
-            }
-            composable(
-                route = Routes.TRANSACTION_EDITOR_WITH_ID,
-                arguments = listOf(navArgument("id") { type = NavType.LongType }),
-            ) { entry ->
-                val id = entry.arguments?.getLong("id")
-                val viewModel: TransactionEditorViewModel = transactionEditorViewModel(appContainer.useCases, id)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                TransactionEditorScreen(
-                    state = state,
-                    onTitleChanged = viewModel::onTitleChanged,
-                    onAmountChanged = viewModel::onAmountChanged,
-                    onTypeSelected = viewModel::onTypeSelected,
-                    onCategorySelected = viewModel::onCategorySelected,
-                    onDateSelected = viewModel::onDateSelected,
-                    onNotesChanged = viewModel::onNotesChanged,
-                    onRecurringChanged = viewModel::onRecurringChanged,
-                    onSave = viewModel::onSaveClicked,
-                    onCancel = { navController.popBackStack() },
-                )
-            }
-            composable(Routes.CATEGORIES) {
-                val viewModel: CategoryListViewModel = viewModel(factory = factory)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                CategoryListScreen(
-                    state = state,
-                    onNameChanged = viewModel::onNameChanged,
-                    onTypeSelected = viewModel::onTypeSelected,
-                    onSave = viewModel::onSaveClicked,
-                    onDelete = viewModel::onDeleteClicked,
-                )
-            }
-            composable(Routes.BUDGETS) {
-                val viewModel: BudgetListViewModel = viewModel(factory = factory)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                BudgetListScreen(state = state, onDelete = viewModel::onDeleteClicked)
-            }
-            composable(Routes.REPORTS) {
-                val viewModel: ReportsViewModel = viewModel(factory = factory)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                ReportsScreen(
-                    state = state,
-                    onPreviousMonth = { viewModel.onMonthSelected(state.month.minusMonths(1)) },
-                    onNextMonth = { viewModel.onMonthSelected(state.month.plusMonths(1)) },
-                    onExport = viewModel::onExportClicked,
-                )
-            }
-            composable(Routes.SETTINGS) {
-                val viewModel: SettingsViewModel = viewModel(factory = factory)
-                val state by viewModel.uiState.collectAsStateWithLifecycle()
-                SettingsScreen(
-                    state = state,
-                    onCurrencySelected = viewModel::onCurrencySelected,
-                    onDarkModeChanged = viewModel::onDarkModeChanged,
-                    onExport = viewModel::onExportClicked,
-                    onBackup = viewModel::onBackupClicked,
-                    onClearData = viewModel::onClearLocalDataClicked,
-                    onCategories = { navController.navigate(Routes.CATEGORIES) },
-                )
+        ) { padding ->
+            NavHost(
+                navController = navController,
+                startDestination = Routes.DASHBOARD,
+                modifier = Modifier.padding(padding),
+            ) {
+                composable(Routes.DASHBOARD) {
+                    val viewModel: DashboardViewModel = viewModel(factory = factory)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    DashboardScreen(
+                        state = state,
+                        onQuickAdd = { navController.navigate(Routes.transactionEditor()) },
+                        onTransactionSelected = { navController.navigate(Routes.transactionEditor(it)) },
+                    )
+                }
+                composable(Routes.TRANSACTIONS) {
+                    val viewModel: TransactionListViewModel = viewModel(factory = factory)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    TransactionListScreen(
+                        state = state,
+                        onSearchQueryChanged = viewModel::onSearchQueryChanged,
+                        onTypeFilterChanged = viewModel::onTypeFilterChanged,
+                        onTransactionSelected = { navController.navigate(Routes.transactionEditor(it)) },
+                        onDelete = viewModel::onDeleteClicked,
+                    )
+                }
+                composable(Routes.TRANSACTION_EDITOR) {
+                    val viewModel: TransactionEditorViewModel = transactionEditorViewModel(appContainer.useCases, null)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    TransactionEditorScreen(
+                        state = state,
+                        onTitleChanged = viewModel::onTitleChanged,
+                        onAmountChanged = viewModel::onAmountChanged,
+                        onTypeSelected = viewModel::onTypeSelected,
+                        onCategorySelected = viewModel::onCategorySelected,
+                        onDateSelected = viewModel::onDateSelected,
+                        onDatePickerClicked = viewModel::onDatePickerClicked,
+                        onDatePickerDismissed = viewModel::onDatePickerDismissed,
+                        onNotesChanged = viewModel::onNotesChanged,
+                        onRecurringChanged = viewModel::onRecurringChanged,
+                        onSave = viewModel::onSaveClicked,
+                        onSaved = { navController.popBackStack() },
+                        onCancel = { navController.popBackStack() },
+                    )
+                }
+                composable(
+                    route = Routes.TRANSACTION_EDITOR_WITH_ID,
+                    arguments = listOf(navArgument("id") { type = NavType.LongType }),
+                ) { entry ->
+                    val id = entry.arguments?.getLong("id")
+                    val viewModel: TransactionEditorViewModel = transactionEditorViewModel(appContainer.useCases, id)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    TransactionEditorScreen(
+                        state = state,
+                        onTitleChanged = viewModel::onTitleChanged,
+                        onAmountChanged = viewModel::onAmountChanged,
+                        onTypeSelected = viewModel::onTypeSelected,
+                        onCategorySelected = viewModel::onCategorySelected,
+                        onDateSelected = viewModel::onDateSelected,
+                        onDatePickerClicked = viewModel::onDatePickerClicked,
+                        onDatePickerDismissed = viewModel::onDatePickerDismissed,
+                        onNotesChanged = viewModel::onNotesChanged,
+                        onRecurringChanged = viewModel::onRecurringChanged,
+                        onSave = viewModel::onSaveClicked,
+                        onSaved = { navController.popBackStack() },
+                        onCancel = { navController.popBackStack() },
+                    )
+                }
+                composable(Routes.CATEGORIES) {
+                    val viewModel: CategoryListViewModel = viewModel(factory = factory)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    CategoryListScreen(
+                        state = state,
+                        onNameChanged = viewModel::onNameChanged,
+                        onIconSelected = viewModel::onIconSelected,
+                        onColorSelected = viewModel::onColorSelected,
+                        onTypeSelected = viewModel::onTypeSelected,
+                        onEdit = viewModel::onEditClicked,
+                        onSave = viewModel::onSaveClicked,
+                        onDelete = viewModel::onDeleteClicked,
+                    )
+                }
+                composable(Routes.BUDGETS) {
+                    val viewModel: BudgetListViewModel = viewModel(factory = factory)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    BudgetListScreen(
+                        state = state,
+                        onCategorySelected = viewModel::onCategorySelected,
+                        onMonthChanged = viewModel::onMonthChanged,
+                        onLimitAmountChanged = viewModel::onLimitAmountChanged,
+                        onSave = viewModel::onSaveClicked,
+                        onDelete = viewModel::onDeleteClicked,
+                    )
+                }
+                composable(Routes.REPORTS) {
+                    val viewModel: ReportsViewModel = viewModel(factory = factory)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    ReportsScreen(
+                        state = state,
+                        onPreviousMonth = { viewModel.onMonthSelected(state.month.minusMonths(1)) },
+                        onNextMonth = { viewModel.onMonthSelected(state.month.plusMonths(1)) },
+                        onExport = viewModel::onExportClicked,
+                    )
+                }
+                composable(Routes.SETTINGS) {
+                    val viewModel: SettingsViewModel = viewModel(factory = factory)
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    SettingsScreen(
+                        state = state,
+                        onCurrencySelected = viewModel::onCurrencySelected,
+                        onDarkModeChanged = viewModel::onDarkModeChanged,
+                        onExport = viewModel::onExportClicked,
+                        onBackup = viewModel::onBackupClicked,
+                        onClearData = viewModel::onClearLocalDataClicked,
+                        onCategories = { navController.navigate(Routes.CATEGORIES) },
+                    )
+                }
             }
         }
     }

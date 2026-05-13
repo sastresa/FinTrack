@@ -13,12 +13,12 @@ value class Money(val minorUnits: Long) : Comparable<Money> {
 
     operator fun unaryMinus(): Money = Money(-minorUnits)
 
-    fun format(currencySymbol: String = "$"): String {
+    fun format(currencyCode: String = "USD"): String {
         val absolute = kotlin.math.abs(minorUnits)
         val whole = absolute / 100
         val cents = absolute % 100
         val sign = if (minorUnits < 0) "-" else ""
-        return "$sign$currencySymbol$whole.${cents.toString().padStart(2, '0')}"
+        return "$sign${currencyCode.symbol()}$whole.${cents.toString().padStart(2, '0')}"
     }
 
     companion object {
@@ -42,4 +42,11 @@ value class Money(val minorUnits: Long) : Comparable<Money> {
             }
         }
     }
+}
+
+private fun String.symbol(): String = when (uppercase()) {
+    "USD" -> "$"
+    "EUR" -> "€"
+    "GBP" -> "£"
+    else -> "$this "
 }

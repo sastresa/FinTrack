@@ -1,7 +1,6 @@
 package com.fintrack.ui.screen.reports
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.fintrack.ui.component.AppPanel
 import com.fintrack.ui.component.EmptyState
 import com.fintrack.ui.component.MetricCard
 import com.fintrack.ui.component.ProgressRow
+import com.fintrack.ui.component.ScreenHeader
 import com.fintrack.ui.component.SectionHeader
 
 @Composable
@@ -37,32 +38,45 @@ fun ReportsScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Reports", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                Button(onClick = onExport) {
-                    Text("Export")
-                }
-            }
+            ScreenHeader(
+                title = "Reports",
+                subtitle = "Monthly performance and category breakdown.",
+                eyebrow = "ANALYSIS",
+                trailing = {
+                    Button(onClick = onExport) {
+                        Text("Export")
+                    }
+                },
+            )
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onPreviousMonth, modifier = Modifier.weight(1f)) {
-                    Text("Previous")
-                }
-                OutlinedButton(onClick = onNextMonth, modifier = Modifier.weight(1f)) {
-                    Text("Next")
+            AppPanel(Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(onClick = onPreviousMonth, modifier = Modifier.weight(1f)) {
+                        Text("Previous")
+                    }
+                    OutlinedButton(onClick = onNextMonth, modifier = Modifier.weight(1f)) {
+                        Text("Next")
+                    }
                 }
             }
-            Text(state.month.toString(), style = MaterialTheme.typography.titleMedium)
+            Text(
+                state.month.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         if (report == null) {
             item { EmptyState("No report data available.") }
         } else {
             item {
-                MetricCard("Income", report.summary.income.format(), Modifier.fillMaxWidth())
+                MetricCard("Income", report.summary.income.format(state.currencyCode), modifier = Modifier.fillMaxWidth())
             }
             item {
-                MetricCard("Expenses", report.summary.expenses.format(), Modifier.fillMaxWidth())
+                MetricCard("Expenses", report.summary.expenses.format(state.currencyCode), modifier = Modifier.fillMaxWidth())
             }
             item {
                 SectionHeader("Expense breakdown")
@@ -71,13 +85,20 @@ fun ReportsScreen(
                 }
             }
             items(report.expenseBreakdown, key = { it.categoryId }) { summary ->
-                ProgressRow(summary.categoryName, summary.total, summary.percentage)
+                ProgressRow(summary.categoryName, summary.total, summary.percentage, currencyCode = state.currencyCode)
             }
             item {
                 SectionHeader("Income vs expense trend")
             }
             items(report.incomeVsExpenseTrend, key = { it.month }) { point ->
-                Text("${point.month}: ${point.income.format()} income, ${point.expenses.format()} expenses")
+                AppPanel(Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "${point.month}: ${point.income.format(state.currencyCode)} income, " +
+                            "${point.expenses.format(state.currencyCode)} expenses",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
         }
     }

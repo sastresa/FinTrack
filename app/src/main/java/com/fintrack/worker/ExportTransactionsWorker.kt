@@ -1,12 +1,11 @@
 package com.fintrack.worker
 
 import android.content.Context
-import androidx.room.Room
 import androidx.work.Data
 import androidx.work.ListenableWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.fintrack.data.local.db.FinTrackDatabase
+import com.fintrack.data.local.db.FinTrackDatabaseFactory
 import com.fintrack.data.repository.RoomFinanceRepository
 import java.io.File
 import kotlinx.coroutines.runBlocking
@@ -37,11 +36,7 @@ class ExportTransactionsWorker(
     }
 
     private fun loadCsvFromRepository(): String {
-        val database = Room.databaseBuilder(
-            applicationContext,
-            FinTrackDatabase::class.java,
-            "fintrack.db",
-        ).build()
+        val database = FinTrackDatabaseFactory.create(applicationContext)
         return try {
             val repository = RoomFinanceRepository(
                 transactionDao = database.transactionDao(),

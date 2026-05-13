@@ -30,6 +30,7 @@ class DashboardScreenTest {
                         balance = Money(487500),
                         savingsRate = 0.975,
                     ),
+                    currencyCode = "EUR",
                     isEmpty = false,
                 ),
                 onQuickAdd = {},
@@ -38,6 +39,6 @@ class DashboardScreenTest {
         }
 
         composeRule.onNodeWithText("Balance").assertIsDisplayed()
-        composeRule.onNodeWithText("$4875.00").assertIsDisplayed()
+        composeRule.onNodeWithText("€4875.00").assertIsDisplayed()
     }
 }

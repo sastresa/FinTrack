@@ -39,6 +39,10 @@ class FakeFinanceRepository : FinanceRepository {
 
     fun transactionsSnapshot(): List<Transaction> = transactions.value
 
+    fun categoriesSnapshot(): List<Category> = categories.value
+
+    fun budgetsSnapshot(): List<Budget> = budgets.value
+
     override fun observeTransactions(): Flow<List<Transaction>> = transactions
 
     override suspend fun getTransaction(id: Long): Transaction? = transactions.value.firstOrNull { it.id == id }

@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import com.fintrack.ui.screen.editor.TransactionEditorScreen
 import com.fintrack.ui.screen.editor.TransactionEditorUiState
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -27,14 +28,44 @@ class TransactionEditorScreenTest {
                 onTypeSelected = {},
                 onCategorySelected = {},
                 onDateSelected = {},
+                onDatePickerClicked = {},
+                onDatePickerDismissed = {},
                 onNotesChanged = {},
                 onRecurringChanged = {},
                 onSave = {},
+                onSaved = {},
                 onCancel = {},
             )
         }
 
         composeRule.onNodeWithText("Title is required").assertIsDisplayed()
         composeRule.onNodeWithText("Amount must be greater than 0").assertIsDisplayed()
+    }
+
+    @Test
+    fun editorCallsSavedCallbackWhenSaveCompletes() {
+        var saved = false
+
+        composeRule.setContent {
+            TransactionEditorScreen(
+                state = TransactionEditorUiState(isSaved = true),
+                onTitleChanged = {},
+                onAmountChanged = {},
+                onTypeSelected = {},
+                onCategorySelected = {},
+                onDateSelected = {},
+                onDatePickerClicked = {},
+                onDatePickerDismissed = {},
+                onNotesChanged = {},
+                onRecurringChanged = {},
+                onSave = {},
+                onSaved = { saved = true },
+                onCancel = {},
+            )
+        }
+
+        composeRule.waitForIdle()
+
+        assertTrue(saved)
     }
 }
