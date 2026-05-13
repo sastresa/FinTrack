@@ -8,6 +8,7 @@ import com.fintrack.ui.theme.FinTrackThemeHost
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_FinTrack)
         super.onCreate(savedInstanceState)
         val container = (application as FinTrackApplication).appContainer
         setContent {
